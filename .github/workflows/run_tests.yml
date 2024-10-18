@@ -1,4 +1,4 @@
-name: Run Flask Test & Deploy
+name: Run Flask test & Deploy
 
 on:
   push:
