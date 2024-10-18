@@ -1,4 +1,4 @@
-name: Run Flask Tests
+name: Run Flask Test & CI/CD
 
 on:
   push:
@@ -30,7 +30,7 @@ jobs:
       - name: setup Python
         uses: actions/setup-python@v5
         with:
-          python-version: "3.12"
+          python-version: "3.10"
 
       - name: Install Chrome
         run: |
@@ -54,3 +54,32 @@ jobs:
       - name: Stop Flask
         run: |
           kill $(lsof -t -i:5000)
+
+
+  deploy:
+    runs-on: ubuntu-latest
+    needs: test
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+
+      - name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@v1
+        with:
+          credentials_json: '${{ secrets.GCP_CREDENTIALS }}'
+          
+      - name: Set up Google Cloud SDK
+        uses: google-github-actions/setup-gcloud@v1
+        with:
+          project_id: ${{ secrets.GCP_PROJECT_ID }}
+          install_components: app-engine-python
+
+      - name: Deploy to App Engine
+        run: |
+          gcloud app deploy --quiet
